@@ -1,32 +1,9 @@
 #pragma once
 #include <vector>
-#include <chrono>
-using namespace std::chrono;
-
-//#define DEBUGING
-//#define RECORDTIME
-
-#ifdef DEBUGING
-#define DEBUG(fmt, ...) fprintf(stderr, fmt, __VA_ARGS__);
-#else
-#define DEBUG(fmt, ...) ;
-#endif
-
-#ifdef RECORDTIME
-auto start = high_resolution_clock::now();
-auto stop = high_resolution_clock::now();
-#define RECORDSTART() start = high_resolution_clock::now();
-#define RECORDSTOP(x) stop = high_resolution_clock::now(); fprintf(stderr, "%s %dms ", (x), duration_cast<milliseconds>(stop - start).count());
-#else
-#define RECORDSTART() ;
-#define RECORDSTOP(x) ;
-#endif
-
-
 #include "Vector_d.h"
 #include "product_cone.h"
 #include "scmwu.h"
-//#include "cgal_solver.h"
+#include "debug.h"
 
 template <typename FT>
 inline FT max(const FT& a, const FT& b) {

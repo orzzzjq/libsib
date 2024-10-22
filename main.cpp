@@ -6,10 +6,7 @@
 #include "data_io.h"
 #include "Vector_d.h"
 #include "AABB_d.h"
-#include "ses_solver.h"
-
-#define SOLVER SES
-#define ARGS
+#include "libsib.h"
 
 using namespace std::chrono;
 
@@ -44,7 +41,6 @@ int main() {
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);
 
-	printf("\nfinal radius: %.10e\n", SOLVER::get_radius());
 	printf("running time: %lld ms\n", duration.count());
 
 	return EXIT_SUCCESS;
