@@ -23,7 +23,7 @@ std::vector<AABB> aabbs;
 int d = 2, n = 3, no = 0;
 
 int main() {
-	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/aabb/aabb_2d_100_#0.txt");
+	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/aabb/aabb_64d_1000_#0.txt");
 
 	if (!IO::read_aabb(data_filename, aabbs_data, n, d)) {
 		printf("Failed to load input points.\n");
@@ -41,6 +41,11 @@ int main() {
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);
 
+	printf("\n\n---- statistics ----\n");
+	printf("dimension: %d\n", d);
+	printf("number of objects: %d\n", n);
+	printf("final radius: %.6e\n", LIBSIB::get_radius());
+	printf("iteration count: %d\n", LIBSIB::get_iteration());
 	printf("running time: %lld ms\n", duration.count());
 
 	return EXIT_SUCCESS;

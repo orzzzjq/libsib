@@ -77,10 +77,13 @@ void aabb_gen(const char* path, int d, int n, int num) {
 
 int main()
 {
-	int d = 2, n = 100, num = 1;
+	int d = 2, n = 1000, num = 1;
 
 	rand_gen.seed(std::time(0));
-	aabb_gen("C:/_/Project/libsib-dev/data/aabb", d, n, num);
+
+	for (d = 2; d < 1025; d <<= 1) {
+		aabb_gen("C:/_/Project/libsib-dev/data/aabb", d, n, num);
+	}
 
 	//char filename[500];
 	//CGAL::Random r;

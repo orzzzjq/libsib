@@ -10,6 +10,7 @@ namespace LIBSIB {
 	typedef DS::Vector_d<FT> Vector;
 
 	int d, n; // dimension, number of objects
+	int t = 0, stable = 0;
 	int MxT = 10000; // maximum number of iterations
 	FT eta = 0.1; // stepsize
 	
@@ -24,10 +25,13 @@ namespace LIBSIB {
 
 	FT gap = 1e-3;
 	const int window_size = 10;
-	Vector past_values(window_size); // check if the value stablize
+	Vector past_radius(window_size), past_average(window_size); // check if the value stablize
 
 	// initialize the variables
 	void init() {
+		t = 0;
+		stable = 0;
+
 		z = Vector(d);
 		z_acc = Vector(d);
 
@@ -54,11 +58,9 @@ namespace LIBSIB {
 
 	template <typename Object>
 	void process(const vector<Object>& objects) {
-		int t = 0;
-
 		y.normalize();
 		for (; t < MxT; ++t) {
-			//DEBUG("-- iteration : %d | ", t + 1);
+			DEBUG("-- iteration : %d | ", t + 1);
 
 			// oracle: solve for z and v[i]
 			h.to_zero();
@@ -84,8 +86,6 @@ namespace LIBSIB {
 				v_acc[i] += v[i];
 			}
 
-			// convergence criterion
-			// TODO
 			// compute the average center
 			for (int j = 0; j < d; ++j) {
 				z_avg[j] = z_acc[j] / (t + 1);
@@ -101,6 +101,24 @@ namespace LIBSIB {
 				}
 				radius_t = radius_t < radius_i ? radius_i : radius_t;
 			}
+			DEBUG("%.6e ", radius_t);
+
+			// convergence criterion
+			int id = (t % window_size), next_id;
+			next_id = (id == window_size - 1) ? 0 : id + 1;
+			past_radius[id] = radius_t;
+			if (t + 1 >= window_size) {
+				past_average[id] = 0;
+				for (int i = 0; i < window_size; ++i) 
+					past_average[id] += past_radius[i];
+				past_average[id] /= window_size;
+			}
+			if (t + 1 >= (window_size << 1)) {
+				if (fabs(past_average[id] - past_average[next_id]) < gap * past_average[next_id]) stable++;
+				else stable = 0;
+			}
+			DEBUG("past_avg %.2e gap %.2e stable %d ", past_average[id], fabs(past_average[id] - past_average[next_id]) / past_average[next_id], stable);
+			if (stable >= window_size) break;
 
 			// scmwu: update y
 			m.to_zero();
@@ -108,21 +126,20 @@ namespace LIBSIB {
 			m_acc += m;
 			SCMWU::update(m_acc, y, n, d, eta);
 
-			//DEBUG("\n");
+			DEBUG("\n");
 		}
+	}
 
-		radius_t = 0;
-		DEBUG("center : (%.6e, %.6e)\n", z_avg[0], z_avg[1]);
-		for (int i = 0; i < n; ++i) {
-			radius_i = 0;
-			for (int j = 0; j < d; ++j) {
-				vi_avg[j] = v_acc[i][j] / (t + 1);
-				diff_ij = vi_avg[j] - z_avg[j];
-				radius_i += diff_ij * diff_ij;
-			}
-			radius_t = radius_t < radius_i ? radius_i : radius_t;
-		}
-		DEBUG("radius : %.6e\n", sqrt(radius_t));
+	Vector& get_center() {
+		return z_avg;
+	}
+
+	FT get_radius() {
+		return sqrt(radius_t);
+	}
+
+	int get_iteration() {
+		return (t == MxT) ? t : t + 1;
 	}
 
 	// Solve the SIB problem for a generic type of input objects

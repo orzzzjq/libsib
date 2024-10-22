@@ -29,8 +29,8 @@ template <typename T>
 bool read_aabb(const char* filename, std::vector<T>& aabbs, int& n, int& d) {
 	FILE* fp;
 	fopen_s(&fp, filename, "r");
-	const int buffer_size = 10000;
-	char buffer[buffer_size], other[buffer_size];
+	const int buffer_size = 50000;
+	char *buffer = (char*)malloc(sizeof(char) * buffer_size);
 	if (fp) {
 		// get dimension
 		fgets(buffer, buffer_size, fp);
