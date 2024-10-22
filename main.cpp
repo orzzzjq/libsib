@@ -3,6 +3,8 @@
 #include <chrono>
 #include <string>
 
+typedef double FT;
+
 #include "data_io.h"
 #include "Vector_d.h"
 #include "AABB_d.h"
@@ -10,7 +12,6 @@
 
 using namespace std::chrono;
 
-typedef double FT;
 typedef DS::Vector_d<FT> Vector;
 typedef DS::AABB_d<FT> AABB;
 
@@ -22,21 +23,20 @@ std::vector<AABB> aabbs;
 int d = 2, n = 3, no = 0;
 
 int main() {
-	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/aabb/aabb_2d_3_#0.txt");
+	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/aabb/aabb_2d_100_#0.txt");
 
 	if (!IO::read_aabb(data_filename, aabbs_data, n, d)) {
 		printf("Failed to load input points.\n");
 		return EXIT_FAILURE;
 	}
 
-	aabbs.resize(n);
 	for (int i = 0; i < n; ++i) {
-		aabbs[i] = AABB(d, aabbs_data[i]);
+		aabbs.push_back(AABB(d, aabbs_data[i]));
 	}
-
+	
 	auto start = high_resolution_clock::now();
 
-	//SOLVER::solve(aabbs, n, d);
+	LIBSIB::solve<AABB>(aabbs, d, n);
 
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);
