@@ -3,8 +3,9 @@
 #include <chrono>
 #include <string>
 
-#include "points_io.h"
+#include "data_io.h"
 #include "Vector_d.h"
+#include "AABB_d.h"
 #include "ses_solver.h"
 
 #define SOLVER SES
@@ -12,51 +13,33 @@
 
 using namespace std::chrono;
 
-typedef LA::Vector_d<double> Vector;
+typedef double FT;
+typedef DS::Vector_d<FT> Vector;
+typedef DS::AABB_d<FT> AABB;
 
 std::string *path, *file;
 char data_filename[500];
-FILE* stat_fp;
 
-std::vector<Vector> points;
-int n = 100000, d = 1024, no = 0;
+std::vector<Vector> aabbs_data;
+std::vector<AABB> aabbs;
+int d = 2, n = 3, no = 0;
 
-void print_help() {
-	printf("** PDSCP-ST Smallest Enclosing Sphere (beta)\n");
-	printf("-h: help\n");
-	printf("-p [path]: input data path\n");
-	printf("-f [file]: data file name\n");
-}
+int main() {
+	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/aabb/aabb_2d_3_#0.txt");
 
-bool parse(char** argv) {
-	for (int i = 1; i < 5; i += 2) {
-		if (strlen(argv[i]) < 2) return false;
-		switch (argv[i][1]) {
-			case 'p': path = new std::string(argv[i + 1]); break;
-			case 'f': file = new std::string(argv[i + 1]); break;
-			default: return false;
-		}
-	}
-	return true;
-}
-
-int main(int argc, char** argv) {
-	// arguments: -p [path] -f [file]
-	if (argc != 5 || !parse(argv)) {
-		print_help();
-		return EXIT_FAILURE;
-	}
-
-	sprintf_s(data_filename, "%s/%s", path->c_str(), file->c_str());
-
-	if (!IO::read_points(data_filename, points, n, d)) {
+	if (!IO::read_aabb(data_filename, aabbs_data, n, d)) {
 		printf("Failed to load input points.\n");
 		return EXIT_FAILURE;
 	}
 
+	aabbs.resize(n);
+	for (int i = 0; i < n; ++i) {
+		aabbs[i] = AABB(d, aabbs_data[i]);
+	}
+
 	auto start = high_resolution_clock::now();
 
-	SOLVER::solve(points, n, d);
+	//SOLVER::solve(aabbs, n, d);
 
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);

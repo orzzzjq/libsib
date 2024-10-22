@@ -38,7 +38,7 @@ inline FT min(const FT& a, const FT& b) {
 }
 
 namespace SES {
-	typedef LA::Vector_d<double> Vector;
+	typedef DS::Vector_d<double> Vector;
 
 	std::vector<Vector> v; // the input points
 	int n, d; // number of points and the dimension

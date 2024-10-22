@@ -3,7 +3,7 @@
 #include <math.h>
 #include <memory.h>
 
-namespace LA {
+namespace DS {
 	template <typename FT>
 	class Vector_d {
 	private:
@@ -142,9 +142,9 @@ namespace LA {
 }
 
 template <typename FT>
-LA::Vector_d<FT> operator*(FT k, const LA::Vector_d<FT>& v) {
+DS::Vector_d<FT> operator*(FT k, const DS::Vector_d<FT>& v) {
 	int d = v.dimension();
-	LA::Vector_d<FT> res_v(d);
+	DS::Vector_d<FT> res_v(d);
 	for (int i = 0; i < d; ++i) res_v[i] = v[i] * k;
 	return res_v;
 }

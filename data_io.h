@@ -26,7 +26,7 @@ bool write_aabb(const char* filename, const std::vector<T>& aabbs, int d) {
 
 // read a set of AABBs from file
 template <typename T>
-bool write_aabb(const char* filename, const std::vector<T>& aabbs, int& n, int& d) {
+bool read_aabb(const char* filename, std::vector<T>& aabbs, int& n, int& d) {
 	FILE* fp;
 	fopen_s(&fp, filename, "r");
 	const int buffer_size = 10000;
@@ -42,14 +42,14 @@ bool write_aabb(const char* filename, const std::vector<T>& aabbs, int& n, int& 
 		fgets(buffer, buffer_size, fp);
 		// read points
 		aabbs.clear();
-		std::vector<double> coord(d);
+		std::vector<double> coord(d * 2);
 		for (int i = 0; i < n; ++i) {
 			fgets(buffer, buffer_size, fp);
 			int total = 0, cur;
-			for (int j = 0; j < d; ++j) {
+			for (int j = 0; j < d * 2; ++j) {
 				if (sscanf_s(buffer + total, "%lf %n", &coord[j], &cur)) total += cur;
 			}
-			aabbs.push_back(T(d, coord.begin(), coord.end()));
+			aabbs.push_back(T(d * 2, coord.begin(), coord.end()));
 		}
 		return true;
 	}

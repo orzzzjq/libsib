@@ -6,7 +6,7 @@
 #define SQRT2INV 0.7071067811865475
 
 namespace SOC {
-	typedef LA::Vector_d<double> Vector;
+	typedef DS::Vector_d<double> Vector;
 
 	class Element {
 	private:

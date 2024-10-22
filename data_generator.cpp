@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <chrono>
 
-typedef LA::Vector_d<double> Point;
+typedef DS::Vector_d<double> Point;
 
 typedef boost::random::mt19937 gen_type;
 gen_type rand_gen;
@@ -45,23 +45,39 @@ void aabb_gen(const char* path, int d, int n, int num) {
 		sprintf_s(filename, "%s/aabb_%dd_%d_#%d.txt", path, d, n, no);
 		// generate n boxes
 		std::vector<Point> aabbs;
-		for (int t = 0; t < n; ++t) {
-			auto direction = direction_gen(d) * sqrt(d) * 2;
+		for (int i = 0; i < n; ++i) {
+			auto direction = direction_gen(d) * sqrt(d);
 			std::vector<double> coord;
-			for (int i = 0; i < d; ++i) {
-				coord.push_back(direction[i] - 0.5);
-				coord.push_back(direction[i] + 0.5);
+			for (int j = 0; j < d; ++j) {
+				coord.push_back(direction[j] - 0.5);
+				coord.push_back(direction[j] + 0.5);
 			}
 			aabbs.push_back(Point(d * 2, coord.begin(), coord.end()));
 		}
 		IO::write_aabb(filename, aabbs, d);
 		puts(filename);
+
+		// check the norm of the closest point to the origin
+		//double smallest = std::numeric_limits<double>::max();
+		//for (int i = 0; i < n; ++i) {
+		//	double sum = 0;
+		//	for (int j = 0; j < d; ++j) {
+		//		if (fabs(aabbs[i][j << 1]) < fabs(aabbs[i][j << 1 | 1])) {
+		//			sum += aabbs[i][j << 1] * aabbs[i][j << 1];
+		//		}
+		//		else {
+		//			sum += aabbs[i][j << 1 | 1] * aabbs[i][j << 1 | 1];
+		//		}
+		//	}
+		//	smallest = std::min(smallest, sum);
+		//}
+		//printf("smallset norm: %f, sqrt(d)/2: %f\n", sqrt(smallest), sqrt(d) / 2.0);
 	}
 }
 
 int main()
 {
-	int d = 100, n = 3, num = 1;
+	int d = 2, n = 100, num = 1;
 
 	rand_gen.seed(std::time(0));
 	aabb_gen("C:/_/Project/libsib-dev/data/aabb", d, n, num);
