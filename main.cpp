@@ -31,27 +31,24 @@ std::vector<Vector> ball_centers;
 std::vector<FT> ball_radii;
 std::vector<Ball> balls;
 
-// polytopes
-
+// Polytope
+#include "Polytope_d.h"
+typedef DS::Polytope_d<FT> Poly;
+std::vector<Poly> polys;
 
 int d = 2, n = 3, no = 0;
 
 int main() {
-	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/ball/ball_1024d_10000_#0.txt");
+	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/poly/poly_2d_100_#0.txt");
 
-	if (!IO::read_ball(data_filename, ball_centers, ball_radii, n, d)) {
+	if (!IO::read_poly<Poly, Vector>(data_filename, polys, n, d)) {
 		printf("Failed to load input points.\n");
 		return EXIT_FAILURE;
-	}
-	
-	balls.clear();
-	for (int i = 0; i < n; ++i) {
-		balls.push_back(Ball(d, ball_centers[i], ball_radii[i]));
 	}
 
 	auto start = high_resolution_clock::now();
 
-	LIBSIB::solve<Ball>(balls, d, n);
+	LIBSIB::solve<Poly>(polys, d, n);
 
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);

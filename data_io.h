@@ -160,6 +160,48 @@ bool read_ball(const char* filename, std::vector<T>& centers, std::vector<FT>& r
 	return false;
 }
 
+// read a set of polytopes from file
+template <typename Poly, typename Vector>
+bool read_poly(const char* filename, std::vector<Poly>& polys, int& n, int& d) {
+	FILE* fp;
+	fopen_s(&fp, filename, "r");
+	const int buffer_size = 50000;
+	char* buffer = (char*)malloc(sizeof(char) * buffer_size);
+	if (fp) {
+		// get dimension
+		fgets(buffer, buffer_size, fp);
+		sscanf_s(buffer, "%*[^:]: %d", &d);
+		// get number of polys
+		fgets(buffer, buffer_size, fp);
+		sscanf_s(buffer, "%*[^:]: %d", &n);
+		// get separation line
+		fgets(buffer, buffer_size, fp);
+		// read sizes of point sets
+		std::vector<int> p_sizes(n);
+		for (int i = 0; i < n; ++i) {
+			fgets(buffer, buffer_size, fp);
+			sscanf_s(buffer, "%d", &p_sizes[i]);
+		}
+		// read points
+		std::vector<double> coord(d);
+		std::vector<Vector> p_points;
+		for (int i = 0; i < n; ++i) {
+			p_points.clear();
+			for (int j = 0; j < p_sizes[i]; ++j) {
+				fgets(buffer, buffer_size, fp);
+				int total = 0, cur;
+				for (int k = 0; k < d; ++k) {
+					if (sscanf_s(buffer + total, "%lf %n", &coord[k], &cur)) total += cur;
+				}
+				p_points.push_back(Vector(d, coord.begin(), coord.end()));
+			}
+			polys.push_back(Poly(d, p_sizes[i], p_points));
+		}
+		return true;
+	}
+	return false;
+}
+
 // read a point set from file
 template <typename T>
 bool read_ptset(const char* filename, std::vector<T>& points, int& n, int& d) {

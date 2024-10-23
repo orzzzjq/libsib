@@ -110,9 +110,9 @@ void poly_gen(const char* path, int d, int n, int m, int num) {
 	}
 }
 
-int nmain()
+int xmain()
 {
-	int d = 2, n = 3, num = 1;
+	int d = 2, n = 100, num = 1;
 
 	rand_gen.seed(std::time(0));
 
