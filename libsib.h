@@ -1,7 +1,7 @@
 #pragma once
 #include <vector>
 #include "debug.h"
-#include "Vector_d.h"
+#include "DS/Vector_d.h"
 #include "product_cone.h"
 #include "scmwu.h"
 

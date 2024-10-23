@@ -8,7 +8,7 @@ typedef double FT;
 #include "debug.h"
 
 #include "data_io.h"
-#include "Vector_d.h"
+#include "DS/Vector_d.h"
 #include "libsib.h"
 
 using namespace std::chrono;
@@ -19,20 +19,20 @@ std::string *path, *file;
 char data_filename[500];
 
 // AABB
-#include "AABB_d.h"
+#include "DS/AABB_d.h"
 typedef DS::AABB_d<FT> AABB;
 std::vector<Vector> aabbs_data;
 std::vector<AABB> aabbs;
 
 // Ball
-#include "Ball_d.h"
+#include "DS/Ball_d.h"
 typedef DS::Ball_d<FT> Ball;
 std::vector<Vector> ball_centers;
 std::vector<FT> ball_radii;
 std::vector<Ball> balls;
 
 // Polytope
-#include "Polytope_d.h"
+#include "DS/Polytope_d.h"
 typedef DS::Polytope_d<FT> Poly;
 std::vector<Poly> polys;
 

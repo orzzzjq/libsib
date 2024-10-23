@@ -1,10 +1,4 @@
-//#include <CGAL/Cartesian_d.h>
-//#include <CGAL/Min_sphere_of_points_d_traits_d.h>
-//#include <CGAL/Min_sphere_of_spheres_d.h>
-//#include <CGAL/Random.h>
-//#include <CGAL/IO/read_points.h>
-//#include <CGAL/IO/write_points.h>
-#include "Vector_d.h"
+#include "DS/Vector_d.h"
 
 #include <boost/random.hpp>
 #include <boost/random/uniform_on_sphere.hpp>
