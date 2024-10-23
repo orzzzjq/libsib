@@ -47,6 +47,11 @@ namespace DS {
 			for (int i = 0; i < d; ++i) this->v[i] = 0;
 		}
 
+		void normalize() {
+			FT length = this->length();
+			for (int i = 0; i < d; ++i) this->v[i] /= length;
+		}
+
 		void copy(const Vector_d<FT>& other) {
 			if (this->d != other.dimension()) {
 				std::cerr << "Vector_d: not in the same dimension.\n";

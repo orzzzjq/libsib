@@ -101,7 +101,7 @@ namespace LIBSIB {
 				}
 				radius_t = radius_t < radius_i ? radius_i : radius_t;
 			}
-			DEBUG("%.6e ", radius_t);
+			DEBUG("radius %.6e ", radius_t);
 
 			// convergence criterion
 			int id = (t % window_size), next_id;

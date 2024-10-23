@@ -29,9 +29,15 @@ Point direction_gen(int d) {
 	return Point(d, coord.begin(), coord.end());
 }
 
-// generate unit cubes
-/*
-	data structure : every AABB is a (d*2)-dimensional Point
+double uniform(double l, double r) {
+	boost::uniform_real<double> unif(l, r);
+	boost::variate_generator<gen_type&, boost::uniform_real<double>> random(rand_gen, unif);
+	return random();
+}
+
+/*	Generate unit cubes
+	
+	Data structure : every AABB is a (d*2)-dimensional Point
 organized as
 	( lower bound of the 1st dimension,   ... [0]
 	upper bound of the first diemsnion,   ... [1]
@@ -56,75 +62,61 @@ void aabb_gen(const char* path, int d, int n, int num) {
 		}
 		IO::write_aabb(filename, aabbs, d);
 		puts(filename);
-
-		// check the norm of the closest point to the origin
-		//double smallest = std::numeric_limits<double>::max();
-		//for (int i = 0; i < n; ++i) {
-		//	double sum = 0;
-		//	for (int j = 0; j < d; ++j) {
-		//		if (fabs(aabbs[i][j << 1]) < fabs(aabbs[i][j << 1 | 1])) {
-		//			sum += aabbs[i][j << 1] * aabbs[i][j << 1];
-		//		}
-		//		else {
-		//			sum += aabbs[i][j << 1 | 1] * aabbs[i][j << 1 | 1];
-		//		}
-		//	}
-		//	smallest = std::min(smallest, sum);
-		//}
-		//printf("smallset norm: %f, sqrt(d)/2: %f\n", sqrt(smallest), sqrt(d) / 2.0);
 	}
 }
 
-int main()
+/*	Generate unit balls
+
+	Data structure : every ball is represented as:
+	(radius, center)
+*/
+void ball_gen(const char* path, int d, int n, int num) {
+
+	char filename[500];
+	for (int no = 0; no < num; ++no) {
+		sprintf_s(filename, "%s/ball_%dd_%d_#%d.txt", path, d, n, no);
+		// generate n balls
+		std::vector<Point> centers;
+		std::vector<float> radii;
+		for (int i = 0; i < n; ++i) {
+			centers.push_back(direction_gen(d) * 4);
+			radii.push_back(1.0);
+		}
+		IO::write_ball(filename, centers, radii, d);
+		puts(filename);
+	}
+}
+
+/*	Generate random polytopes
+
+	Data structure : every polytope is represented by a point set in the unit ball
+*/
+void poly_gen(const char* path, int d, int n, int m, int num) {
+	char filename[500];
+	for (int no = 0; no < num; ++no) {
+		sprintf_s(filename, "%s/poly_%dd_%d_#%d.txt", path, d, n, no);
+		// generate n polytopes
+		std::vector<Point> p_points;
+		std::vector<int> p_sizes;
+		for (int i = 0; i < n; ++i) {
+			p_sizes.push_back(m);
+			auto direction = direction_gen(d) * 4;
+			for (int j = 0; j < m; ++j) {
+				p_points.push_back(direction_gen(d) * sqrt(uniform(0, 1)) + direction);
+			}
+		}
+		IO::write_poly(filename, p_points, p_sizes, d);
+		puts(filename);
+	}
+}
+
+int nmain()
 {
-	int d = 2, n = 1000, num = 1;
+	int d = 2, n = 3, num = 1;
 
 	rand_gen.seed(std::time(0));
 
-	for (d = 2; d < 1025; d <<= 1) {
-		aabb_gen("C:/_/Project/libsib-dev/data/aabb", d, n, num);
-	}
-
-	//char filename[500];
-	//CGAL::Random r;
-
-	//std::vector<Point> p, q;
-
-	////for (d = 2; d <= (1 << 9); d <<= 1) {
-	//	printf("%d\n", d);
-	//	std::vector<double> coord(d);
-	//	//for (int no = 0; no < 10; ++no) {
-	//		p.clear();
-	//		sprintf_s(filename, "C:/_/Project/libsib-dev/data/ptset/ptset_%dd_%d_#%d.txt", d, n, no);
-	//		for (int i = 0; i < n; ++i) {
-	//			for (int j = 0; j < d; ++j) {
-	//				coord[j] = r.get_double(-1, 1);
-	//			}
-	//			p.push_back(Point(d, coord.begin(), coord.end()));
-	//		}
-
-	//		if (!IO::write_points(filename, p, d))
-	//			return EXIT_FAILURE;
-	//		puts(filename);
-	//	//}
-	////}
-
-
-	//// Test read_points()
-	//int nn, dd;
-	//if (!IO::read_points(filename, q, nn, dd))
-	//	return EXIT_FAILURE;
-
-	//assert(nn == n);
-	//assert(dd == d);
-	//for (int i = 0; i < n; ++i) {
-	//	for (int j = 0; j < d; ++j) {
-	//		if (fabs(p[i][j] - q[i][j]) > 1e-7) {
-	//			printf("Failed, difference: %e\n", fabs(p[i][j] - q[i][j]));
-	//			return EXIT_FAILURE;
-	//		}
-	//	}
-	//}
+	poly_gen("C:/_/Project/libsib-dev/data/poly", d, n, 4, num);
 
 	return 0;
 }
