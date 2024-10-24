@@ -104,13 +104,40 @@ void poly_gen(const char* path, int d, int n, int m, int num) {
 	}
 }
 
+
+/*	Generate reduced polytopes
+
+	Data structure : every polytope is represented by a point set in the unit ball,
+the constraint parameter is 1/x for each reduced polytope, where x ~ Unif(1, mi).
+*/
+void rpoly_gen(const char* path, int d, int n, int m, int num) {
+	char filename[500];
+	for (int no = 0; no < num; ++no) {
+		sprintf_s(filename, "%s/rpoly_%dd_%d_#%d.txt", path, d, n, no);
+		// generate n polytopes
+		std::vector<Point> p_points;
+		std::vector<int> p_sizes;
+		std::vector<double> p_params;
+		for (int i = 0; i < n; ++i) {
+			p_sizes.push_back(m);
+			p_params.push_back(1.0 / uniform(1, m));
+			auto direction = direction_gen(d) * 4;
+			for (int j = 0; j < m; ++j) {
+				p_points.push_back(direction_gen(d) * sqrt(uniform(0, 1)) + direction);
+			}
+		}
+		IO::write_rpoly(filename, p_points, p_sizes, p_params, d);
+		puts(filename);
+	}
+}
+
 int xmain()
 {
-	int d = 2, n = 100, num = 1;
+	int d = 2, n = 10, num = 1;
 
 	rand_gen.seed(std::time(0));
 
-	poly_gen("C:/_/Project/libsib-dev/data/poly", d, n, 4, num);
+	rpoly_gen("C:/_/Project/libsib-dev/data/rpoly", d, n, 10, num);
 
 	return 0;
 }

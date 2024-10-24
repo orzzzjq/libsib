@@ -26,7 +26,7 @@ namespace DS {
 		Vector_d<FT> operator[](int idx) const { return this->p[idx]; }
 		Vector_d<FT>& operator[](int idx) { return this->p[idx]; }
 
-		// minimize a linear function <h,x> over the ball
+		// minimize a linear function <h,x> over the convex polytope
 		void minimize(const Vector_d<FT>& h, Vector_d<FT>& x) const {
 			int id_min = 0;
 			FT val, val_min = std::numeric_limits<FT>::max();

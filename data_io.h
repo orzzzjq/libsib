@@ -70,6 +70,30 @@ bool write_poly(const char* filename, const std::vector<T>& p_points, const std:
 	return false;
 }
 
+// write a set of reduced polytopes to file
+template <typename T>
+bool write_rpoly(const char* filename, const std::vector<T>& p_points, const std::vector<int>& p_sizes, const std::vector<double>& p_params, int d) {
+	FILE* fp;
+	fopen_s(&fp, filename, "w");
+	if (fp) {
+		int n = p_sizes.size();
+		fprintf(fp, "dimension: %d\n", d);
+		fprintf(fp, "number of polytopes: %d\n", n);
+		fprintf(fp, "---------------------------------------\n");
+		for (int i = 0; i < n; ++i) {
+			fprintf(fp, "%d %.7e\n", p_sizes[i], p_params[i]);
+		}
+		for (int i = 0; i < p_points.size(); ++i) {
+			for (int j = 0; j < d; ++j) {
+				fprintf(fp, "%7e ", p_points[i][j]);
+			}
+			fprintf(fp, "\n");
+		}
+		return true;
+	}
+	return false;
+}
+
 // write a point set to file
 template <typename T>
 bool write_ptset(const char* filename, const std::vector<T>& points, int n, int d) {
@@ -196,6 +220,49 @@ bool read_poly(const char* filename, std::vector<Poly>& polys, int& n, int& d) {
 				p_points.push_back(Vector(d, coord.begin(), coord.end()));
 			}
 			polys.push_back(Poly(d, p_sizes[i], p_points));
+		}
+		return true;
+	}
+	return false;
+}
+
+// read a set of reduced polytopes from file
+template <typename RPoly, typename Vector>
+bool read_rpoly(const char* filename, std::vector<RPoly>& polys, int& n, int& d) {
+	FILE* fp;
+	fopen_s(&fp, filename, "r");
+	const int buffer_size = 50000;
+	char* buffer = (char*)malloc(sizeof(char) * buffer_size);
+	if (fp) {
+		// get dimension
+		fgets(buffer, buffer_size, fp);
+		sscanf_s(buffer, "%*[^:]: %d", &d);
+		// get number of polys
+		fgets(buffer, buffer_size, fp);
+		sscanf_s(buffer, "%*[^:]: %d", &n);
+		// get separation line
+		fgets(buffer, buffer_size, fp);
+		// read sizes of point sets
+		std::vector<int> p_sizes(n);
+		std::vector<double> p_params(n);
+		for (int i = 0; i < n; ++i) {
+			fgets(buffer, buffer_size, fp);
+			sscanf_s(buffer, "%d %lf", &p_sizes[i], &p_params[i]);
+		}
+		// read points
+		std::vector<double> coord(d);
+		std::vector<Vector> p_points;
+		for (int i = 0; i < n; ++i) {
+			p_points.clear();
+			for (int j = 0; j < p_sizes[i]; ++j) {
+				fgets(buffer, buffer_size, fp);
+				int total = 0, cur;
+				for (int k = 0; k < d; ++k) {
+					if (sscanf_s(buffer + total, "%lf %n", &coord[k], &cur)) total += cur;
+				}
+				p_points.push_back(Vector(d, coord.begin(), coord.end()));
+			}
+			polys.push_back(RPoly(d, p_sizes[i], p_params[i], p_points));
 		}
 		return true;
 	}
