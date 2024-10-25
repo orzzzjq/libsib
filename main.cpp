@@ -43,7 +43,7 @@ std::vector<RPoly> rpolys;
 
 int d, n, no = 0;
 
-int main() {
+int xmain() {
 	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/rpoly/rpoly_2d_10_#0.txt");
 
 	if (!IO::read_rpoly<RPoly, Vector>(data_filename, rpolys, n, d)) {

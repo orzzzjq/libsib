@@ -1,6 +1,8 @@
 #pragma once
 #include <vector>
 #include <stdio.h>
+#include <fstream>
+#include <Eigen/Dense>
 
 namespace IO {
 // write a set of AABBs to file
@@ -86,27 +88,6 @@ bool write_rpoly(const char* filename, const std::vector<T>& p_points, const std
 		for (int i = 0; i < p_points.size(); ++i) {
 			for (int j = 0; j < d; ++j) {
 				fprintf(fp, "%7e ", p_points[i][j]);
-			}
-			fprintf(fp, "\n");
-		}
-		return true;
-	}
-	return false;
-}
-
-// write a point set to file
-template <typename T>
-bool write_ptset(const char* filename, const std::vector<T>& points, int n, int d) {
-	FILE* fp;
-	fopen_s(&fp, filename, "w");
-	if (fp) {
-		int n = points.size();
-		fprintf(fp, "dimension: %d\n", d);
-		fprintf(fp, "number of points: %d\n", n);
-		fprintf(fp, "---------------------------------------\n");
-		for (int i = 0; i < n; ++i) {
-			for (int j = 0; j < d; ++j) {
-				fprintf(fp, "%7e ", points[i][j]);
 			}
 			fprintf(fp, "\n");
 		}
@@ -269,33 +250,49 @@ bool read_rpoly(const char* filename, std::vector<RPoly>& polys, int& n, int& d)
 	return false;
 }
 
-// read a point set from file
+
+typedef Eigen::MatrixXd Matrix;
+
+// write a set of ellipsoids to binary file
 template <typename T>
-bool read_ptset(const char* filename, std::vector<T>& points, int& n, int& d) {
-	FILE* fp;
-	fopen_s(&fp, filename, "r");
-	const int buffer_size = 10000;
-	char buffer[buffer_size], other[buffer_size];
-	if (fp) {
-		// get dimension
-		fgets(buffer, buffer_size, fp);
-		sscanf_s(buffer, "%*[^:]: %d", &d);
-		// get number of points
-		fgets(buffer, buffer_size, fp);
-		sscanf_s(buffer, "%*[^:]: %d", &n);
-		// get separation line
-		fgets(buffer, buffer_size, fp);
-		// read points
-		points.clear();
-		std::vector<double> coord(d);
-		for (int i = 0; i < n; ++i) {
-			fgets(buffer, buffer_size, fp);
-			int total = 0, cur;
-			for (int j = 0; j < d; ++j) {
-				if(sscanf_s(buffer + total, "%lf %n", &coord[j], &cur)) total += cur;
-			}
-			points.push_back(T(d, coord.begin(), coord.end()));
+void write_ellip(const char* filename, const std::vector<T>& centers, const std::vector<Matrix>& mats, int d) {
+	int n = centers.size();
+	std::ofstream out(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+	out.write((char*)&d, sizeof(int));
+	out.write((char*)&n, sizeof(int));
+	for (int i = 0; i < n; ++i) {
+		for (int j = 0; j < d; ++j) {
+			double x = centers[i][j];
+			out.write((char*)&x, sizeof(double));
 		}
+	}
+	for (int i = 0; i < n; ++i) {
+		out.write((char*)mats[i].data(), d * d * sizeof(typename Matrix::Scalar));
+	}
+	out.close();
+}
+
+// read a set of ellipsoids from a binary file
+template <typename Ellip, typename Vector>
+bool read_ellip(const char* filename, std::vector<Ellip>& ellips, int& n, int& d) {
+	std::ifstream in(filename, std::ios::in | std::ios::binary);
+	if (!in.fail()) {
+		in.read((char*)(&d), sizeof(int));
+		in.read((char*)(&n), sizeof(int));
+		std::vector<double> coord(d);
+		std::vector<Vector> centers;
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < d; ++j) {
+				in.read((char*)(&coord[j]), sizeof(double));
+			}
+			centers.push_back(Vector(d, coord.begin(), coord.end()));
+		}
+		Matrix Q(d, d);
+		for (int i = 0; i < n; ++i) {
+			in.read((char*)Q.data(), d * d * sizeof(typename Matrix::Scalar));
+			ellips.push_back(Ellip(d, centers[i], Q));
+		}
+		in.close();
 		return true;
 	}
 	return false;

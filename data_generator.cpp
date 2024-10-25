@@ -1,7 +1,11 @@
 #include "DS/Vector_d.h"
+#include "DS/Ellipsoid_d.h"
 
 #include <boost/random.hpp>
 #include <boost/random/uniform_on_sphere.hpp>
+
+#include <random>
+#include <Eigen/Dense>
 
 #include "data_io.h"
 
@@ -10,6 +14,7 @@
 #include <chrono>
 
 typedef DS::Vector_d<double> Point;
+typedef Eigen::MatrixXd Matrix;
 
 typedef boost::random::mt19937 gen_type;
 gen_type rand_gen;
@@ -104,7 +109,6 @@ void poly_gen(const char* path, int d, int n, int m, int num) {
 	}
 }
 
-
 /*	Generate reduced polytopes
 
 	Data structure : every polytope is represented by a point set in the unit ball,
@@ -131,13 +135,44 @@ void rpoly_gen(const char* path, int d, int n, int m, int num) {
 	}
 }
 
-int xmain()
+/*	Generate ellipsoids
+
+	Data structure : every ellipsoid is represented by its center c and a 
+positive definite matrix Q, and the ellipsoids is defined as:
+	(x - c)^T Q^{-1} (x - c)
+*/
+void ellip_gen(const char* path, int d, int n, int num) {
+	std::mt19937 generator;
+	generator.seed(std::time(0));
+	std::uniform_real_distribution<double> distribution(-1.0, 1.0);
+	auto random = [&]() { return distribution(generator); };
+
+	char filename[500];
+	for (int no = 0; no < num; ++no) {
+		sprintf_s(filename, "%s/ellip_%dd_%d_#%d.bin", path, d, n, no);
+		// generate n ellipsoids
+		std::vector<Point> centers;
+		std::vector<Matrix> mats;
+		centers.clear();
+		mats.clear();
+		Matrix A;
+		for (int i = 0; i < n; ++i) {
+			centers.push_back(direction_gen(d) * 4);
+			A = Matrix::NullaryExpr(d, d, random);
+			mats.push_back(A * A.transpose());
+		}
+		IO::write_ellip(filename, centers, mats, d);
+		puts(filename);
+	}
+}
+
+int main()
 {
-	int d = 2, n = 10, num = 1;
+	int d = 2, n = 5, num = 1;
 
 	rand_gen.seed(std::time(0));
 
-	rpoly_gen("C:/_/Project/libsib-dev/data/rpoly", d, n, 10, num);
+	ellip_gen("C:/_/Project/libsib-dev/data/ellip", d, n, num);
 
 	return 0;
 }
