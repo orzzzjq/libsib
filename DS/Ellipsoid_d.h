@@ -26,17 +26,21 @@ namespace DS {
 		Vector_d<FT>& get_center() const { return this->c; }
 		Matrix get_matrix() const { return this->Q; }
 
-		//// minimize a linear function <h,x> over the ball
-		//void minimize(const Vector_d<FT>& h, Vector_d<FT>& x) const {
-		//	for (int i = 0; i < this->d; ++i) {
-		//		x[i] = -h[i];
-		//	}
-		//	if (x.length() > 1e-12) {
-		//		x.normalize();
-		//		x *= this->r;
-		//		x += this->c;
-		//	}
-		//	else x.copy(this->c);
-		//}
+		// minimize a linear function <h,x> over the ellipsoid
+		void minimize(const Vector_d<FT>& h, Vector_d<FT>& x) const {
+			Matrix H(this->d, 1);
+			for (int i = 0; i < this->d; ++i) {
+				H(i, 0) = h[i];
+			}
+			x.copy(this->c);
+			Matrix S = H.transpose() * this->Q * H;
+			double norm = sqrt(S(0, 0));
+			if (norm > 1e-12) {
+				S = this->Q * H / norm;
+				for (int i = 0; i < this->d; ++i) {
+					x[i] -= S(i, 0);
+				}
+			}
+		}
 	};
 }

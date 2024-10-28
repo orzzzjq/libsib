@@ -19,7 +19,6 @@ typedef Eigen::MatrixXd Matrix;
 typedef boost::random::mt19937 gen_type;
 gen_type rand_gen;
 
-
 // generate a random point on unit sphere
 Point direction_gen(int d) {
 	boost::uniform_on_sphere<double> unif_sphere(d);
@@ -141,7 +140,7 @@ void rpoly_gen(const char* path, int d, int n, int m, int num) {
 positive definite matrix Q, and the ellipsoids is defined as:
 	(x - c)^T Q^{-1} (x - c)
 */
-void ellip_gen(const char* path, int d, int n, int num) {
+void ellip_gen(const char* path, int d, int n, int num, bool txt=false) {
 	std::mt19937 generator;
 	generator.seed(std::time(0));
 	std::uniform_real_distribution<double> distribution(-1.0, 1.0);
@@ -162,17 +161,90 @@ void ellip_gen(const char* path, int d, int n, int num) {
 			mats.push_back(A * A.transpose());
 		}
 		IO::write_ellip(filename, centers, mats, d);
+		if (txt) {
+			sprintf_s(filename, "%s/ellip_%dd_%d_#%d.txt", path, d, n, no);
+			IO::write_ellip_txt(filename, centers, mats, d);
+		}
 		puts(filename);
 	}
 }
 
-int main()
+// project v to u
+Eigen::MatrixXd proj(Eigen::MatrixXd u, Eigen::MatrixXd v) {
+	auto a = u.transpose() * v;
+	auto b = u.transpose() * u;
+	double ratio = a(0, 0) / b(0, 0);
+	return u * ratio;
+}
+
+// Gram-Schmidt process to generate a orthonormal matrix Q
+void GramSchmidt(Eigen::MatrixXd& A, Eigen::MatrixXd& Q) {
+	int n = A.rows();
+	Eigen::MatrixXd u, v;
+	for (int i = 0; i < n; ++i) {
+		u = A(Eigen::all, i), v = A(Eigen::all, i);
+		for (int j = 0; j < i; ++j) {
+			u -= proj(Q(Eigen::all, j), v);
+		}
+		Q(Eigen::all, i) = u;
+	}
+	for (int i = 0; i < n; ++i) {
+		Q(Eigen::all, i).normalize();
+	}
+}
+
+/*	Generate ellipsoids (version 2) : generate symmetric positive definite matrices with bounded condition number
+
+	Data structure : every ellipsoid is represented by its center c and a
+positive definite matrix Q, and the ellipsoids is defined as:
+	(x - c)^T Q^{-1} (x - c)
+*/
+void ellip_gen_v2(const char* path, int d, int n, int num, bool txt = false) {
+	std::mt19937 generator;
+	generator.seed(std::time(0));
+	std::uniform_real_distribution<double> distribution(-1.0, 1.0), eigenvalue(0.3, 1.5);
+	auto random = [&]() { return distribution(generator); };
+
+	char filename[500];
+	for (int no = 0; no < num; ++no) {
+		sprintf_s(filename, "%s/ellip_%dd_%d_#%d.bin", path, d, n, no);
+		// generate n ellipsoids
+		std::vector<Point> centers;
+		std::vector<Matrix> mats;
+		centers.clear();
+		mats.clear();
+		Matrix A, Q(d, d), D(d, d);
+		for (int i = 0; i < n; ++i) {
+			printf("%d\n", i);
+
+			centers.push_back(direction_gen(d) * 4); // center of the ellipsoid
+			
+			A = Matrix::NullaryExpr(d, d, random); // generate a random square matrix
+			GramSchmidt(A, Q);
+			D.setZero();
+			for (int j = 0; j < d; ++j) { // generate random eigenvalues
+				D(j, j) = eigenvalue(generator);
+			}
+
+			mats.push_back(Q.transpose() * D * Q);
+		}
+		IO::write_ellip(filename, centers, mats, d);
+		if (txt) {
+			sprintf_s(filename, "%s/ellip_%dd_%d_#%d.txt", path, d, n, no);
+			IO::write_ellip_txt(filename, centers, mats, d);
+		}
+		puts(filename);
+	}
+}
+
+int xmain()
 {
-	int d = 2, n = 5, num = 1;
+	int d = 512, n = 100, num = 10;
 
 	rand_gen.seed(std::time(0));
 
-	ellip_gen("C:/_/Project/libsib-dev/data/ellip", d, n, num);
+	for (d = 4; d < 512; (d <<= 1)) 
+		ellip_gen_v2("C:/_/Project/libsib-dev/data/ellip", d, n, num, false);
 
 	return 0;
 }

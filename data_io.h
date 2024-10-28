@@ -253,6 +253,35 @@ bool read_rpoly(const char* filename, std::vector<RPoly>& polys, int& n, int& d)
 
 typedef Eigen::MatrixXd Matrix;
 
+// write a set of ellipsoids to text file
+template <typename T>
+bool write_ellip_txt(const char* filename, const std::vector<T>& centers, const std::vector<Matrix>& mats, int d) {
+	FILE* fp;
+	fopen_s(&fp, filename, "w");
+	if (fp) {
+		int n = centers.size();
+		fprintf(fp, "dimension: %d\n", d);
+		fprintf(fp, "number of ellipsoids: %d\n", n);
+		fprintf(fp, "---------------------------------------\n");
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < d; ++j) {
+				fprintf(fp, "%.7e ", centers[i][j]);
+			}
+			fprintf(fp, "\n");
+		}
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < d; ++j) {
+				for (int k = 0; k < d; ++k) {
+					fprintf(fp, "%.7e ", mats[i].coeff(j,k));
+				}
+				fprintf(fp, "\n");
+			}
+		}
+		return true;
+	}
+	return false;
+}
+
 // write a set of ellipsoids to binary file
 template <typename T>
 void write_ellip(const char* filename, const std::vector<T>& centers, const std::vector<Matrix>& mats, int d) {

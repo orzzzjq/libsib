@@ -35,37 +35,43 @@ char data_filename[500];
 //#include "DS/Polytope_d.h"
 //typedef DS::Polytope_d<FT> Poly;
 //std::vector<Poly> polys;
+//
+//// Reduced polytope
+//#include "DS/ReducedPolytope_d.h"
+//typedef DS::ReducedPolytope_d<FT> RPoly;
+//std::vector<RPoly> rpolys;
 
-// Reduced polytope
-#include "DS/ReducedPolytope_d.h"
-typedef DS::ReducedPolytope_d<FT> RPoly;
-std::vector<RPoly> rpolys;
+// Ellipsoid
+#include "DS/Ellipsoid_d.h"
+typedef DS::Ellipsoid_d<FT> Ellip;
+std::vector<Ellip> ellips;
 
 int d, n, no = 0;
 
-int xmain() {
-	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/rpoly/rpoly_2d_10_#0.txt");
+int main() {
+	for (no = 0; no < 10; ++no) {
+		sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/ellip/ellip_16d_100_#%d.bin", no);
 
-	if (!IO::read_rpoly<RPoly, Vector>(data_filename, rpolys, n, d)) {
-		printf("Failed to load input points.\n");
-		return EXIT_FAILURE;
+		if (!IO::read_ellip<Ellip, Vector>(data_filename, ellips, n, d)) {
+			printf("Failed to load input points.\n");
+			return EXIT_FAILURE;
+		}
+
+		auto start = high_resolution_clock::now();
+
+		LIBSIB::solve<Ellip>(ellips, d, n);
+
+		auto stop = high_resolution_clock::now();
+		auto duration = duration_cast<milliseconds>(stop - start);
+
+		printf("\n\n---- statistics ----\n");
+		printf("dimension: %d\n", d);
+		printf("number of objects: %d\n", n);
+		printf("final radius: %.6e\n", LIBSIB::get_radius());
+		printf("iteration count: %d\n", LIBSIB::get_iteration());
+		printf("running time: %lld ms\n", duration.count());
+
+		if (d == 2) DEBUG("center: (%.7e, %.7e)\n", LIBSIB::get_center()[0], LIBSIB::get_center()[1]);
 	}
-
-	auto start = high_resolution_clock::now();
-
-	LIBSIB::solve<RPoly>(rpolys, d, n);
-
-	auto stop = high_resolution_clock::now();
-	auto duration = duration_cast<milliseconds>(stop - start);
-
-	printf("\n\n---- statistics ----\n");
-	printf("dimension: %d\n", d);
-	printf("number of objects: %d\n", n);
-	printf("final radius: %.6e\n", LIBSIB::get_radius());
-	printf("iteration count: %d\n", LIBSIB::get_iteration());
-	printf("running time: %lld ms\n", duration.count());
-
-	if (d == 2) DEBUG("center: (%.2e, %.2e)\n", LIBSIB::get_center()[0], LIBSIB::get_center()[1]);
-
 	return EXIT_SUCCESS;
 }
