@@ -99,7 +99,7 @@ bool write_rpoly(const char* filename, const std::vector<T>& p_points, const std
 
 // read a set of AABBs from file
 template <typename T>
-bool read_aabb(const char* filename, std::vector<T>& aabbs, int& n, int& d) {
+bool legacy_read_aabb(const char* filename, std::vector<T>& aabbs, int& n, int& d) {
 	FILE* fp;
 	fopen_s(&fp, filename, "r");
 	const int buffer_size = 50000;
@@ -129,9 +129,43 @@ bool read_aabb(const char* filename, std::vector<T>& aabbs, int& n, int& d) {
 	return false;
 }
 
+// read a set of AABBs from file
+template <typename AABB, typename Vector>
+bool read_aabb(const char* filename, std::vector<AABB>& aabbs, int& n, int& d) {
+	FILE* fp;
+	fopen_s(&fp, filename, "r");
+	const int buffer_size = 50000;
+	char* buffer = (char*)malloc(sizeof(char) * buffer_size);
+	if (fp) {
+		// get dimension
+		fgets(buffer, buffer_size, fp);
+		sscanf_s(buffer, "%*[^:]: %d", &d);
+		// get number of aabbs
+		fgets(buffer, buffer_size, fp);
+		sscanf_s(buffer, "%*[^:]: %d", &n);
+		// get separation line
+		fgets(buffer, buffer_size, fp);
+		// read points
+		aabbs.clear();
+		std::vector<double> coord(d * 2);
+		Vector data;
+		for (int i = 0; i < n; ++i) {
+			fgets(buffer, buffer_size, fp);
+			int total = 0, cur;
+			for (int j = 0; j < d * 2; ++j) {
+				if (sscanf_s(buffer + total, "%lf %n", &coord[j], &cur)) total += cur;
+			}
+			data = Vector(d * 2, coord.begin(), coord.end());
+			aabbs.push_back(AABB(d, data));
+		}
+		return true;
+	}
+	return false;
+}
+
 // read a set of balls from file
-template <typename T, typename FT>
-bool read_ball(const char* filename, std::vector<T>& centers, std::vector<FT>& radii, int& n, int& d) {
+template <typename Ball, typename Vector >
+bool read_ball(const char* filename, std::vector<Ball>& balls, int& n, int& d) {
 	FILE* fp;
 	fopen_s(&fp, filename, "r");
 	const int buffer_size = 50000;
@@ -146,8 +180,7 @@ bool read_ball(const char* filename, std::vector<T>& centers, std::vector<FT>& r
 		// get separation line
 		fgets(buffer, buffer_size, fp);
 		// read points
-		radii.clear();
-		centers.clear();
+		Vector center;
 		double radius;
 		std::vector<double> coord(d);
 		for (int i = 0; i < n; ++i) {
@@ -157,8 +190,8 @@ bool read_ball(const char* filename, std::vector<T>& centers, std::vector<FT>& r
 			for (int j = 0; j < d; ++j) {
 				if (sscanf_s(buffer + total, "%lf %n", &coord[j], &cur)) total += cur;
 			}
-			radii.push_back(radius);
-			centers.push_back(T(d, coord.begin(), coord.end()));
+			center = Vector(d, begin(coord), end(coord));
+			balls.push_back(Ball(d, center, radius));
 		}
 		return true;
 	}
