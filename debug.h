@@ -2,7 +2,7 @@
 #include <chrono>
 using namespace std::chrono;
 
-//#define DEBUGING
+#define DEBUGING
 //#define RECORDTIME
 
 #ifdef DEBUGING

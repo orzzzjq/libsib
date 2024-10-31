@@ -15,40 +15,66 @@ using namespace std::chrono;
 
 typedef DS::Vector_d<FT> Vector;
 
-std::string *path, *file;
+//#define args
+bool tolog = false;
+std::string *path, *file, *logfile;
 char data_filename[500];
 
 // AABB
-#include "DS/AABB_d.h"
+//#include "DS/AABB_d.h"
+//typedef DS::AABB_d<FT> Object;
+//bool (*read_file)(const char*, std::vector<Object>&, int&, int&) = IO::read_aabb<Object, Vector>;
 
-//// Ball
+// Ball
 //#include "DS/Ball_d.h"
-//typedef DS::Ball_d<FT> Ball;
+//typedef DS::Ball_d<FT> Object;
+//bool (*read_file)(const char*, std::vector<Object>&, int&, int&) = IO::read_ball<Object, Vector>;
 
-//// Polytope
+// Polytope
 //#include "DS/Polytope_d.h"
-//typedef DS::Polytope_d<FT> Poly;
-//std::vector<Poly> polys;
+//typedef DS::Polytope_d<FT> Object;
+//bool (*read_file)(const char *, std::vector<Object>&, int&, int&) = IO::read_poly<Object, Vector>;
 
-//// Reduced polytope
-//#include "DS/ReducedPolytope_d.h"
-//typedef DS::ReducedPolytope_d<FT> RPoly;
-//std::vector<RPoly> rpolys;
+// Reduced polytope
+#include "DS/ReducedPolytope_d.h"
+typedef DS::ReducedPolytope_d<FT> Object;
+bool (*read_file)(const char *, std::vector<Object>&, int&, int&) = IO::read_rpoly<Object, Vector>;
 
-//// Ellipsoid
+// Ellipsoid
 //#include "DS/Ellipsoid_d.h"
-//typedef DS::Ellipsoid_d<FT> Ellip;
-//std::vector<Ellip> ellips;
+//typedef DS::Ellipsoid_d<FT> Object;
 
-typedef DS::AABB_d<FT> Object;
 std::vector<Object> objects;
 
 int d, n, no = 0;
 
-int main() {
-	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/aabb/aabb_2d_100_#%d.txt", no);
+#ifdef args
+bool parse(int argc, char** argv) {
+	for (int i = 1; i < argc; i += 2) {
+		if (strlen(argv[i]) < 2) return false;
+		switch (argv[i][1]) {
+		case 'p': path = new std::string(argv[i + 1]); break;
+		case 'f': file = new std::string(argv[i + 1]); break;
+		case 'l': logfile = new std::string(argv[i + 1]); tolog = true; break;
+		default: return false;
+		}
+	}
+	return true;
+}
 
-	if (!IO::read_aabb<Object, Vector>(data_filename, objects, n, d)) {
+int main(int argc, char** argv) {
+	// arguments: -p [path] -f [file] -l [log]
+	if (!parse(argc, argv)) {
+		//print_help();
+		return EXIT_FAILURE;
+	}
+
+	sprintf_s(data_filename, "%s/%s", path->c_str(), file->c_str());
+#else
+int xmain() {
+	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/rpoly/rpoly_2d_10_#0.bin");
+#endif
+	if (!read_file(data_filename, objects, n, d)) {
 		printf("Failed to load input points.\n");
 		return EXIT_FAILURE;
 	}
@@ -60,12 +86,17 @@ int main() {
 	auto stop = high_resolution_clock::now();
 	auto duration = duration_cast<milliseconds>(stop - start);
 
-	printf("\n\n---- statistics ----\n");
-	printf("dimension: %d\n", d);
-	printf("number of objects: %d\n", n);
-	printf("final radius: %.6e\n", LIBSIB::get_radius());
-	printf("iteration count: %d\n", LIBSIB::get_iteration());
-	printf("running time: %lld ms\n", duration.count());
+	FILE* logfp = stdout;
+	if (tolog) fopen_s(&logfp, logfile->c_str(), "a");
+
+	if (logfp) {
+		fprintf(logfp, "\n\n---- statistics ----\n");
+		fprintf(logfp, "dimension: %d\n", d);
+		fprintf(logfp, "number of objects: %d\n", n);
+		fprintf(logfp, "final radius: %.6e\n", LIBSIB::get_radius());
+		fprintf(logfp, "iteration count: %d\n", LIBSIB::get_iteration());
+		fprintf(logfp, "running time: %lld ms\n", duration.count());
+	}
 
 	if (d == 2) DEBUG("center: (%.7e, %.7e)\n", LIBSIB::get_center()[0], LIBSIB::get_center()[1]);
 	

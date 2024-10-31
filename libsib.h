@@ -12,7 +12,7 @@ namespace LIBSIB {
 	int d, n; // dimension, number of objects
 	int t = 0, stable = 0;
 	int MxT = 10000; // maximum number of iterations
-	FT eta = 1.0; // stepsize
+	FT eta = 0.1; // stepsize
 	
 	Vector z, z_acc; // center of the intersecting ball, sum of the past iterates
 	Vector z_avg, vi_avg; // average center, average vi
@@ -23,7 +23,7 @@ namespace LIBSIB {
 	FT val, val_v, val_z; // record the minimum value when optimizing over convex hull
 	FT radius_t, radius_i, diff_ij;
 
-	FT gap = 1e-3;
+	FT gap = 1e-4;
 	const int window_size = 10;
 	Vector past_radius(window_size), past_average(window_size); // check if the value stablize
 

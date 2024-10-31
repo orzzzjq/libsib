@@ -43,10 +43,10 @@ organized as
 	lower bound of the d-th dimension,    ... [(d-1)*2]
 	upper bound of the d-th dimension )   ... [(d-1)*2 + 1]
 */
-void aabb_gen(const char* path, int d, int n, int num) {
+void aabb_gen(const char* path, int d, int n, int num, bool txt=false) {
 	char filename[500];
 	for (int no = 0; no < num; ++no) {
-		sprintf_s(filename, "%s/aabb_%dd_%d_#%d.txt", path, d, n, no);
+		sprintf_s(filename, "%s/aabb_%dd_%d_#%d.bin", path, d, n, no);
 		// generate n boxes
 		std::vector<Point> aabbs;
 		for (int i = 0; i < n; ++i) {
@@ -59,6 +59,10 @@ void aabb_gen(const char* path, int d, int n, int num) {
 			aabbs.push_back(Point(d * 2, coord.begin(), coord.end()));
 		}
 		IO::write_aabb(filename, aabbs, d);
+		if (txt) {
+			sprintf_s(filename, "%s/aabb_%dd_%d_#%d.txt", path, d, n, no);
+			IO::write_aabb_txt(filename, aabbs, d);
+		}
 		puts(filename);
 	}
 }
@@ -68,11 +72,11 @@ void aabb_gen(const char* path, int d, int n, int num) {
 	Data structure : every ball is represented as:
 	(radius, center)
 */
-void ball_gen(const char* path, int d, int n, int num) {
+void ball_gen(const char* path, int d, int n, int num, bool txt=false) {
 
 	char filename[500];
 	for (int no = 0; no < num; ++no) {
-		sprintf_s(filename, "%s/ball_%dd_%d_#%d.txt", path, d, n, no);
+		sprintf_s(filename, "%s/ball_%dd_%d_#%d.bin", path, d, n, no);
 		// generate n balls
 		std::vector<Point> centers;
 		std::vector<float> radii;
@@ -81,6 +85,10 @@ void ball_gen(const char* path, int d, int n, int num) {
 			radii.push_back(1.0);
 		}
 		IO::write_ball(filename, centers, radii, d);
+		if (txt) {
+			sprintf_s(filename, "%s/ball_%dd_%d_#%d.txt", path, d, n, no);
+			IO::write_ball_txt(filename, centers, radii, d);
+		}
 		puts(filename);
 	}
 }
@@ -89,10 +97,10 @@ void ball_gen(const char* path, int d, int n, int num) {
 
 	Data structure : every polytope is represented by a point set in the unit ball
 */
-void poly_gen(const char* path, int d, int n, int m, int num) {
+void poly_gen(const char* path, int d, int n, int m, int num, bool txt=false) {
 	char filename[500];
 	for (int no = 0; no < num; ++no) {
-		sprintf_s(filename, "%s/poly_%dd_%d_#%d.txt", path, d, n, no);
+		sprintf_s(filename, "%s/poly_%dd_%d_#%d.bin", path, d, n, no);
 		// generate n polytopes
 		std::vector<Point> p_points;
 		std::vector<int> p_sizes;
@@ -104,6 +112,10 @@ void poly_gen(const char* path, int d, int n, int m, int num) {
 			}
 		}
 		IO::write_poly(filename, p_points, p_sizes, d);
+		if (txt) {
+			sprintf_s(filename, "%s/poly_%dd_%d_#%d.txt", path, d, n, no);
+			IO::write_poly_txt(filename, p_points, p_sizes, d);
+		}
 		puts(filename);
 	}
 }
@@ -113,23 +125,28 @@ void poly_gen(const char* path, int d, int n, int m, int num) {
 	Data structure : every polytope is represented by a point set in the unit ball,
 the constraint parameter is 1/x for each reduced polytope, where x ~ Unif(1, mi).
 */
-void rpoly_gen(const char* path, int d, int n, int m, int num) {
+void rpoly_gen(const char* path, int d, int n, int m, int num, bool txt=false) {
 	char filename[500];
 	for (int no = 0; no < num; ++no) {
-		sprintf_s(filename, "%s/rpoly_%dd_%d_#%d.txt", path, d, n, no);
+		sprintf_s(filename, "%s/rpoly_%dd_%d_#%d.bin", path, d, n, no);
 		// generate n polytopes
 		std::vector<Point> p_points;
 		std::vector<int> p_sizes;
 		std::vector<double> p_params;
 		for (int i = 0; i < n; ++i) {
 			p_sizes.push_back(m);
-			p_params.push_back(1.0 / uniform(1, m));
+			//p_params.push_back(1.0 / uniform(1, m));
+			p_params.push_back(1.0 / 2.0);
 			auto direction = direction_gen(d) * 4;
 			for (int j = 0; j < m; ++j) {
 				p_points.push_back(direction_gen(d) * sqrt(uniform(0, 1)) + direction);
 			}
 		}
 		IO::write_rpoly(filename, p_points, p_sizes, p_params, d);
+		if (txt) {
+			sprintf_s(filename, "%s/rpoly_%dd_%d_#%d.txt", path, d, n, no);
+			IO::write_rpoly_txt(filename, p_points, p_sizes, p_params, d);
+		}
 		puts(filename);
 	}
 }
@@ -237,14 +254,14 @@ void ellip_gen_v2(const char* path, int d, int n, int num, bool txt = false) {
 	}
 }
 
-int xmain()
+int main()
 {
-	int d = 512, n = 100, num = 10;
+	int d = 2, n = 100, m = 1024 + 256, num = 10;
 
 	rand_gen.seed(std::time(0));
 
-	for (d = 4; d < 512; (d <<= 1)) 
-		ellip_gen_v2("C:/_/Project/libsib-dev/data/ellip", d, n, num, false);
+	for (d = (1 << 1); d < (1 << 11); (d <<= 1))
+		poly_gen("C:/_/Project/libsib-dev/data/poly/varying_d", d, n, m, num);
 
 	return 0;
 }
