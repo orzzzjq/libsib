@@ -254,7 +254,7 @@ void ellip_gen_v2(const char* path, int d, int n, int num, bool txt = false) {
 	}
 }
 
-int main()
+int xmain()
 {
 	int d = 2, n = 100, m = 1024 + 256, num = 10;
 

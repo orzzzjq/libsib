@@ -23,7 +23,7 @@ namespace LIBSIB {
 	FT val, val_v, val_z; // record the minimum value when optimizing over convex hull
 	FT radius_t, radius_i, diff_ij;
 
-	FT gap = 1e-4;
+	FT gap = 1e-3;
 	const int window_size = 10;
 	Vector past_radius(window_size), past_average(window_size); // check if the value stablize
 

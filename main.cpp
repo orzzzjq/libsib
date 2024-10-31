@@ -15,20 +15,11 @@ using namespace std::chrono;
 
 typedef DS::Vector_d<FT> Vector;
 
-//#define args
+#define args
+
 bool tolog = false;
 std::string *path, *file, *logfile;
 char data_filename[500];
-
-// AABB
-//#include "DS/AABB_d.h"
-//typedef DS::AABB_d<FT> Object;
-//bool (*read_file)(const char*, std::vector<Object>&, int&, int&) = IO::read_aabb<Object, Vector>;
-
-// Ball
-//#include "DS/Ball_d.h"
-//typedef DS::Ball_d<FT> Object;
-//bool (*read_file)(const char*, std::vector<Object>&, int&, int&) = IO::read_ball<Object, Vector>;
 
 // Polytope
 //#include "DS/Polytope_d.h"
@@ -36,13 +27,24 @@ char data_filename[500];
 //bool (*read_file)(const char *, std::vector<Object>&, int&, int&) = IO::read_poly<Object, Vector>;
 
 // Reduced polytope
-#include "DS/ReducedPolytope_d.h"
-typedef DS::ReducedPolytope_d<FT> Object;
-bool (*read_file)(const char *, std::vector<Object>&, int&, int&) = IO::read_rpoly<Object, Vector>;
+//#include "DS/ReducedPolytope_d.h"
+//typedef DS::ReducedPolytope_d<FT> Object;
+//bool (*read_file)(const char *, std::vector<Object>&, int&, int&) = IO::read_rpoly<Object, Vector>;
+
+// AABB
+//#include "DS/AABB_d.h"
+//typedef DS::AABB_d<FT> Object;
+//bool (*read_file)(const char*, std::vector<Object>&, int&, int&) = IO::read_aabb<Object, Vector>;
+
+// Ball
+#include "DS/Ball_d.h"
+typedef DS::Ball_d<FT> Object;
+bool (*read_file)(const char*, std::vector<Object>&, int&, int&) = IO::read_ball<Object, Vector>;
 
 // Ellipsoid
 //#include "DS/Ellipsoid_d.h"
 //typedef DS::Ellipsoid_d<FT> Object;
+//bool (*read_file)(const char*, std::vector<Object>&, int&, int&) = IO::read_ellip<Object, Vector>;
 
 std::vector<Object> objects;
 
@@ -71,8 +73,8 @@ int main(int argc, char** argv) {
 
 	sprintf_s(data_filename, "%s/%s", path->c_str(), file->c_str());
 #else
-int xmain() {
-	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/rpoly/rpoly_2d_10_#0.bin");
+int main() {
+	sprintf_s(data_filename, "C:/_/Project/libsib-dev/data/ellip/varying_d/ellip_2d_100_#0.bin");
 #endif
 	if (!read_file(data_filename, objects, n, d)) {
 		printf("Failed to load input points.\n");
