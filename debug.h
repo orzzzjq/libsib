@@ -3,6 +3,7 @@
 using namespace std::chrono;
 
 //#define DEBUGING
+//#define TRAJECTORY
 //#define RECORDTIME
 
 #ifdef DEBUGING

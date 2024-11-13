@@ -2,10 +2,54 @@
 #include <vector>
 #include <stdio.h>
 #include <fstream>
+#include "DS/Object.h"
 #include <Eigen/Dense>
 
 namespace IO {
 typedef Eigen::MatrixXd Matrix;
+typedef DS::Object<FT> Object;
+
+// write a set of points to text file
+template <typename T>
+bool write_pset_txt(const char* filename, const std::vector<T>& pts, int d) {
+	FILE* fp;
+	fopen_s(&fp, filename, "w");
+	if (fp) {
+		int n = pts.size();
+		fprintf(fp, "dimension: %d\n", d);
+		fprintf(fp, "number of points: %d\n", n);
+		fprintf(fp, "---------------------------------------\n");
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < d; ++j) {
+				fprintf(fp, "%.7e ", pts[i][j]);
+			}
+			fprintf(fp, "\n");
+		}
+		return true;
+	}
+	return false;
+}
+
+// write a set of points to binary file
+template <typename T>
+bool write_pset(const char* filename, const std::vector<T>& pts, int d) {
+	int n = pts.size();
+	std::ofstream out(filename, std::ios::out | std::ios::binary | std::ios::trunc);
+	if (!out.fail()) {
+		out.write((char*)&d, sizeof(int));
+		out.write((char*)&n, sizeof(int));
+		for (int i = 0; i < n; ++i) {
+			double x;
+			for (int j = 0; j < d; ++j) {
+				x = pts[i][j];
+				out.write((char*)(&x), sizeof(double));
+			}
+		}
+		out.close();
+		return true;
+	}
+	return false;
+}
 
 // write a set of AABBs to text file
 template <typename T>
@@ -238,9 +282,30 @@ void write_ellip(const char* filename, const std::vector<T>& centers, const std:
 	out.close();
 }
 
+// read a set of balls from binary file
+template <typename Vector >
+bool read_pset(const char* filename, std::vector<Object*>& pset, int& n, int& d) {
+	std::ifstream in(filename, std::ios::in | std::ios::binary);
+	if (!in.fail()) {
+		in.read((char*)(&d), sizeof(int));
+		in.read((char*)(&n), sizeof(int));
+		Vector point;
+		std::vector<double> coord(d);
+		for (int i = 0; i < n; ++i) {
+			for (int j = 0; j < d; ++j) {
+				in.read((char*)(&coord[j]), sizeof(double));
+			}
+			pset.push_back(new Vector(d, coord.begin(), coord.end()));
+		}
+		in.close();
+		return true;
+	}
+	return false;
+}
+
 // read a set of AABBs from binary file
 template <typename AABB, typename Vector>
-bool read_aabb(const char* filename, std::vector<AABB>& aabbs, int& n, int& d) {
+bool read_aabb(const char* filename, std::vector<Object*>& aabbs, int& n, int& d) {
 	std::ifstream in(filename, std::ios::in | std::ios::binary);
 	if (!in.fail()) {
 		in.read((char*)(&d), sizeof(int));
@@ -252,7 +317,7 @@ bool read_aabb(const char* filename, std::vector<AABB>& aabbs, int& n, int& d) {
 				in.read((char*)(&coord[j]), sizeof(double));
 			}
 			data = Vector(d * 2, coord.begin(), coord.end());
-			aabbs.push_back(AABB(d, data));
+			aabbs.push_back(new AABB(d, data));
 		}
 		in.close();
 		return true;
@@ -262,7 +327,7 @@ bool read_aabb(const char* filename, std::vector<AABB>& aabbs, int& n, int& d) {
 
 // read a set of balls from binary file
 template <typename Ball, typename Vector >
-bool read_ball(const char* filename, std::vector<Ball>& balls, int& n, int& d) {
+bool read_ball(const char* filename, std::vector<Object*>& balls, int& n, int& d) {
 	std::ifstream in(filename, std::ios::in | std::ios::binary);
 	if (!in.fail()) {
 		in.read((char*)(&d), sizeof(int));
@@ -276,7 +341,7 @@ bool read_ball(const char* filename, std::vector<Ball>& balls, int& n, int& d) {
 				in.read((char*)(&coord[j]), sizeof(double));
 			}
 			center = Vector(d, coord.begin(), coord.end());
-			balls.push_back(Ball(d, center, radius));
+			balls.push_back(new Ball(d, center, radius));
 		}
 		in.close();
 		return true;
@@ -286,7 +351,7 @@ bool read_ball(const char* filename, std::vector<Ball>& balls, int& n, int& d) {
 
 // read a set of polytopes from binary file
 template <typename Poly, typename Vector>
-bool read_poly(const char* filename, std::vector<Poly>& polys, int& n, int& d) {
+bool read_poly(const char* filename, std::vector<Object*>& polys, int& n, int& d) {
 	std::ifstream in(filename, std::ios::in | std::ios::binary);
 	if (!in.fail()) {
 		in.read((char*)(&d), sizeof(int));
@@ -306,7 +371,7 @@ bool read_poly(const char* filename, std::vector<Poly>& polys, int& n, int& d) {
 				}
 				p_points.push_back(Vector(d, coord.begin(), coord.end()));
 			}
-			polys.push_back(Poly(d, p_sizes[i], p_points));
+			polys.push_back(new Poly(d, p_sizes[i], p_points));
 		}
 		in.close();
 		return true;
@@ -316,7 +381,7 @@ bool read_poly(const char* filename, std::vector<Poly>& polys, int& n, int& d) {
 
 // read a set of reduced polytopes from binary file
 template <typename RPoly, typename Vector>
-bool read_rpoly(const char* filename, std::vector<RPoly>& rpolys, int& n, int& d) {
+bool read_rpoly(const char* filename, std::vector<Object*>& rpolys, int& n, int& d) {
 	std::ifstream in(filename, std::ios::in | std::ios::binary);
 	if (!in.fail()) {
 		in.read((char*)(&d), sizeof(int));
@@ -338,7 +403,7 @@ bool read_rpoly(const char* filename, std::vector<RPoly>& rpolys, int& n, int& d
 				}
 				p_points.push_back(Vector(d, coord.begin(), coord.end()));
 			}
-			rpolys.push_back(RPoly(d, p_sizes[i], p_params[i], p_points));
+			rpolys.push_back(new RPoly(d, p_sizes[i], p_params[i], p_points));
 		}
 		in.close();
 		return true;
@@ -350,7 +415,7 @@ bool read_rpoly(const char* filename, std::vector<RPoly>& rpolys, int& n, int& d
 
 // read a set of ellipsoids from binary file
 template <typename Ellip, typename Vector>
-bool read_ellip(const char* filename, std::vector<Ellip>& ellips, int& n, int& d) {
+bool read_ellip(const char* filename, std::vector<Object*>& ellips, int& n, int& d) {
 	std::ifstream in(filename, std::ios::in | std::ios::binary);
 	if (!in.fail()) {
 		in.read((char*)(&d), sizeof(int));
@@ -366,7 +431,7 @@ bool read_ellip(const char* filename, std::vector<Ellip>& ellips, int& n, int& d
 		Matrix Q(d, d);
 		for (int i = 0; i < n; ++i) {
 			in.read((char*)Q.data(), d * d * sizeof(typename Matrix::Scalar));
-			ellips.push_back(Ellip(d, centers[i], Q));
+			ellips.push_back(new Ellip(d, centers[i], Q));
 		}
 		in.close();
 		return true;

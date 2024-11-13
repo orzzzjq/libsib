@@ -33,6 +33,27 @@ double uniform(double l, double r) {
 	return random();
 }
 
+
+/*	Generate a point set
+*/
+void pset_gen(const char* path, int d, int n, int num, bool txt = false) {
+	char filename[500];
+	for (int no = 0; no < num; ++no) {
+		sprintf_s(filename, "%s/pset_%dd_%d_#%d.bin", path, d, n, no);
+		// generate n balls
+		std::vector<Point> pts;
+		for (int i = 0; i < n; ++i) {
+			pts.push_back(direction_gen(d) * uniform(0.5,4));
+		}
+		IO::write_pset(filename, pts, d);
+		if (txt) {
+			sprintf_s(filename, "%s/pset_%dd_%d_#%d.txt", path, d, n, no);
+			IO::write_pset_txt(filename, pts, d);
+		}
+		puts(filename);
+	}
+}
+
 /*	Generate unit cubes
 	
 	Data structure : every AABB is a (d*2)-dimensional Point
@@ -256,12 +277,12 @@ void ellip_gen_v2(const char* path, int d, int n, int num, bool txt = false) {
 
 int xmain()
 {
-	int d = 2, n = 100, m = 1024 + 256, num = 10;
+	int d = 64, n = 10000, m = 1024 + 256, num = 10;
 
 	rand_gen.seed(std::time(0));
 
-	for (d = (1 << 1); d < (1 << 11); (d <<= 1))
-		poly_gen("C:/_/Project/libsib-dev/data/poly/varying_d", d, n, m, num);
+	for (n = (1 << 8); n < (1 << 18); (n <<= 1))
+		pset_gen("./pset/varying_n", d, n, num);
 
 	return 0;
 }

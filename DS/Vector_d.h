@@ -143,6 +143,11 @@ namespace DS {
 		double dist(const Vector_d<FT>& other) const {
 			return sqrt(this->dist_sqr(other));
 		}
+
+		// minimize a linear function <h,x> (indeed, return the point)
+		void minimize(const Vector_d<FT>& h, Vector_d<FT>& x) const {
+			x.copy(*this);
+		}
 	};
 }
 

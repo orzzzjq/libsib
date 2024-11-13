@@ -1,9 +1,10 @@
 #pragma once
 #include "Vector_d.h"
+#include "Object.h"
 
 namespace DS {
 	template <typename FT>
-	class Ball_d {
+	class Ball_d : public Object<FT> {
 	private:
 		Vector_d<FT> c; // center
 		FT r; // radius

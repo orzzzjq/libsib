@@ -1,13 +1,13 @@
 #pragma once
 #include "Vector_d.h"
+#include "Object.h"
 #include <Eigen/Dense>
-
 
 namespace DS {
 	typedef Eigen::MatrixXd Matrix;
 
 	template <typename FT>
-	class Ellipsoid_d {
+	class Ellipsoid_d : public Object<FT> {
 	private:
 		Vector_d<FT> c; // center
 		Matrix Q; // (inverse) of the positive definite matrix

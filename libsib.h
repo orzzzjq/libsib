@@ -2,12 +2,14 @@
 #include <vector>
 #include "debug.h"
 #include "DS/Vector_d.h"
+#include "DS/Object.h"
 #include "product_cone.h"
 #include "scmwu.h"
 
 namespace LIBSIB {
 	using namespace std;
 	typedef DS::Vector_d<FT> Vector;
+	typedef DS::Object<FT> Object;
 
 	int d, n; // dimension, number of objects
 	int t = 0, stable = 0;
@@ -26,6 +28,14 @@ namespace LIBSIB {
 	FT gap = 1e-3;
 	const int window_size = 10;
 	Vector past_radius(window_size), past_average(window_size); // check if the value stablize
+
+#ifdef TRAJECTORY
+	FILE* traj;
+
+	void set_trajectory_file(const char* filename) {
+		fopen_s(&traj, filename, "w");
+	}
+#endif
 
 	// initialize the variables
 	void init() {
@@ -56,8 +66,7 @@ namespace LIBSIB {
 		m_acc.to_zero();
 	}
 
-	template <typename Object>
-	void process(const vector<Object>& objects) {
+	void process(const vector<Object*>& objects) {
 		y.normalize();
 		for (; t < MxT; ++t) {
 			DEBUG("-- iteration : %d | ", t + 1);
@@ -67,7 +76,7 @@ namespace LIBSIB {
 			for (int i = 0; i < n; ++i) h += y[i].get_x(); // get coefficient vector
 			val_z = numeric_limits<FT>::max();
 			for (int i = 0; i < n; ++i) {
-				objects[i].minimize(h, z);
+				objects[i]->minimize(h, z);
 				val = h * z;
 				if (val < val_z) { // record the best value
 					val_z= val;
@@ -81,7 +90,7 @@ namespace LIBSIB {
 			for (int i = 0; i < n; ++i) {
 				h.to_zero();
 				h -= y[i].get_x(); // coefficient is negative y[i]_bar
-				objects[i].minimize(h, v[i]); // the solution for v[i]
+				objects[i]->minimize(h, v[i]); // the solution for v[i]
 				val_v += h * v[i];
 				v_acc[i] += v[i];
 			}
@@ -89,6 +98,9 @@ namespace LIBSIB {
 			// compute the average center
 			for (int j = 0; j < d; ++j) {
 				z_avg[j] = z_acc[j] / (t + 1);
+#ifdef TRAJECTORY
+				fprintf(traj, "%.7e ", z_avg[j]);
+#endif
 			}
 			// compute the average vi, and the maximum distance (radius)
 			radius_t = 0;
@@ -98,10 +110,16 @@ namespace LIBSIB {
 					vi_avg[j] = v_acc[i][j] / (t + 1);
 					diff_ij = vi_avg[j] - z_avg[j];
 					radius_i += diff_ij * diff_ij;
+#ifdef TRAJECTORY
+					fprintf(traj, "%.7e ", vi_avg[j]);
+#endif
 				}
 				radius_t = radius_t < radius_i ? radius_i : radius_t;
 			}
 			DEBUG("radius %.6e ", radius_t);
+#ifdef TRAJECTORY
+			fprintf(traj, "\n");
+#endif
 
 			// convergence criterion
 			int id = (t % window_size), next_id;
@@ -142,9 +160,16 @@ namespace LIBSIB {
 		return (t == MxT) ? t : t + 1;
 	}
 
+	void set_eta(FT eta_val) {
+		eta = eta_val;
+	}
+
+	void set_gap(FT gap_val) {
+		gap = gap_val;
+	}
+
 	// Solve the SIB problem for a generic type of input objects
-	template <typename Object>
-	void solve(const vector<Object>& objects, int d, int n) {
+	void solve(const vector<Object*>& objects, int d, int n) {
 		LIBSIB::d = d, LIBSIB::n = n;
 		init();
 		process(objects);

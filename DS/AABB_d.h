@@ -1,9 +1,10 @@
 #pragma once
 #include "Vector_d.h"
+#include "Object.h"
 
 namespace DS {
 	template <typename FT>
-	class AABB_d {
+	class AABB_d : public Object<FT> {
 	private:
 		Vector_d<FT> l, u; // lower and upper bounds
 		int d; // dimension

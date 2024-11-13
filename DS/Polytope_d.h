@@ -1,10 +1,11 @@
 #pragma once
 #include "Vector_d.h"
+#include "Object.h"
 #include <vector>
 
 namespace DS {
 	template <typename FT>
-	class Polytope_d {
+	class Polytope_d : public Object<FT> {
 	private:
 		std::vector<Vector_d<FT>> p;
 		int d, m; // dimension, size of point set
