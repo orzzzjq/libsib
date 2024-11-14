@@ -13,6 +13,7 @@ typedef double FT;
 
 #include "DS/Vector_d.h"
 #include "DS/Object.h"
+#include "DS/Point_d.h"
 #include "DS/Polytope_d.h"
 #include "DS/ReducedPolytope_d.h"
 #include "DS/AABB_d.h"
@@ -57,7 +58,7 @@ bool parse(int argc, char** argv) {
 	}
 
 	type = std::string(argv[1]);
-	if (type == "point");
+	if (type == "point") read_file = IO::read_pset<DS::Point_d<FT>, Vector>;
 	else if (type == "poly") read_file = IO::read_poly<DS::Polytope_d<FT>, Vector>;
 	else if (type == "rpoly") read_file = IO::read_rpoly<DS::ReducedPolytope_d<FT>, Vector>;
 	else if (type == "aabb") read_file = IO::read_aabb<DS::AABB_d<FT>, Vector>;

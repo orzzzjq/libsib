@@ -283,7 +283,7 @@ void write_ellip(const char* filename, const std::vector<T>& centers, const std:
 }
 
 // read a set of balls from binary file
-template <typename Vector >
+template <typename Point, typename Vector>
 bool read_pset(const char* filename, std::vector<Object*>& pset, int& n, int& d) {
 	std::ifstream in(filename, std::ios::in | std::ios::binary);
 	if (!in.fail()) {
@@ -295,7 +295,7 @@ bool read_pset(const char* filename, std::vector<Object*>& pset, int& n, int& d)
 			for (int j = 0; j < d; ++j) {
 				in.read((char*)(&coord[j]), sizeof(double));
 			}
-			pset.push_back(new Vector(d, coord.begin(), coord.end()));
+			pset.push_back(new Point(d, coord.begin(), coord.end()));
 		}
 		in.close();
 		return true;
