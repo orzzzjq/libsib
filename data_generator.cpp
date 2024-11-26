@@ -1,17 +1,18 @@
-#include "DS/Vector_d.h"
-#include "DS/Ellipsoid_d.h"
-
 #include <boost/random.hpp>
 #include <boost/random/uniform_on_sphere.hpp>
 
 #include <random>
 #include <Eigen/Dense>
 
-#include "data_io.h"
-
 #include <iostream>
 #include <cstdlib>
 #include <chrono>
+
+typedef double FT;
+
+#include "LIBSIB/data_io.h"
+#include "LIBSIB/DS/Vector_d.h"
+#include "LIBSIB/DS/Ellipsoid_d.h"
 
 typedef DS::Vector_d<double> Point;
 typedef Eigen::MatrixXd Matrix;

@@ -7,18 +7,18 @@ using namespace std::chrono;
 
 typedef double FT;
 
-#include "debug.h"
-#include "data_io.h"
-#include "libsib.h"
+#include "LIBSIB/debug.h"
+#include "LIBSIB/data_io.h"
+#include "LIBSIB/libsib.h"
 
-#include "DS/Vector_d.h"
-#include "DS/Object.h"
-#include "DS/Point_d.h"
-#include "DS/Polytope_d.h"
-#include "DS/ReducedPolytope_d.h"
-#include "DS/AABB_d.h"
-#include "DS/Ball_d.h"
-#include "DS/Ellipsoid_d.h"
+#include "LIBSIB/DS/Vector_d.h"
+#include "LIBSIB/DS/Object.h"
+#include "LIBSIB/DS/Point_d.h"
+#include "LIBSIB/DS/Polytope_d.h"
+#include "LIBSIB/DS/ReducedPolytope_d.h"
+#include "LIBSIB/DS/AABB_d.h"
+#include "LIBSIB/DS/Ball_d.h"
+#include "LIBSIB/DS/Ellipsoid_d.h"
 
 typedef DS::Vector_d<FT> Vector;
 typedef DS::Object<FT> Object;
@@ -34,7 +34,7 @@ int d, n, no = 0;
 #define args
 #ifdef args
 void print_help() {
-	puts("LIBSIB: Computing smallest intersecting balls in arbitrary dimensions.\n");
+	puts("LIBSIB: Compute smallest intersecting balls in arbitrary dimensions.\n");
 	puts("How to use:");
 	puts("  libsib [type] -f [file] [*options]\n");
 	puts("Arguments:");
