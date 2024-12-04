@@ -55,4 +55,4 @@ running time: 1 ms
 
 ## Dependency
 
-To build LIBSIB from the source, you need to include [Boost](https://www.boost.org/) and [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page). Versions that we are using are Boost 1.82.0 and Eigen 3.4.0.
+To build LIBSIB from the source, please include the libraries [Boost](https://www.boost.org/) and [Eigen](https://eigen.tuxfamily.org/index.php?title=Main_Page). Versions that we are using are Boost 1.82.0 and Eigen 3.4.0.
